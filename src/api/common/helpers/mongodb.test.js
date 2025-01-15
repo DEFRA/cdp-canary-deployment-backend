@@ -2,6 +2,7 @@ import { Db, MongoClient } from 'mongodb'
 import { LockManager } from 'mongo-locks'
 
 import { createServer } from '~/src/api/index.js'
+import { mongoDb } from '~/src/api/common/helpers/mongodb.js'
 
 describe('#mongoDb', () => {
   /** @type {Server} */
@@ -10,6 +11,7 @@ describe('#mongoDb', () => {
   describe('Set up', () => {
     beforeAll(async () => {
       server = await createServer()
+      await server.register(mongoDb)
       await server.initialize()
     })
 
@@ -35,6 +37,7 @@ describe('#mongoDb', () => {
   describe('Shut down', () => {
     beforeAll(async () => {
       server = await createServer()
+      await server.register(mongoDb)
       await server.initialize()
     })
 

@@ -11,8 +11,7 @@ const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
     format: String,
-    nullable: true,
-    default: null,
+    default: 'local',
     env: 'SERVICE_VERSION'
   },
   env: {

@@ -54,6 +54,21 @@ async function createServer() {
     router
   ])
 
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response
+    const statusCode = response.isBoom
+      ? response.output.statusCode
+      : response.statusCode
+
+    // Log manually at custom level
+    server.logger.audit(
+      { statusCode, method: request.method, path: request.path },
+      'Request completed'
+    )
+
+    return h.continue
+  })
+
   return server
 }
 

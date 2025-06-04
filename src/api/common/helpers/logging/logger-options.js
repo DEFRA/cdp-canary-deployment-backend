@@ -29,6 +29,9 @@ export const loggerOptions = {
     paths: logConfig.redact,
     remove: true
   },
+  customLevels: {
+    audit: 999
+  },
   level: logConfig.level,
   ...formatters[logConfig.format],
   nesting: true,

@@ -123,6 +123,20 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  scheduler: {
+    enabled: {
+      doc: 'Enable the mongo scheduler',
+      format: Boolean,
+      default: true,
+      env: 'SCHEDULER_ENABLED'
+    },
+    interval: {
+      doc: 'When to run the scheduler (cron format)',
+      format: String,
+      default: '*/1 * * * *',
+      env: 'SCHEDULER_INTERVAL'
+    }
   }
 })
 

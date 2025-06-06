@@ -6,6 +6,8 @@ import {
 import { config } from '~/src/config/index.js'
 import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
 
+const logger = createLogger()
+
 /**
  * @param {string} metricName
  * @param {number} value
@@ -28,7 +30,7 @@ const metricsCounter = async (metricName, value = 1) => {
     )
     await metricsLogger.flush()
   } catch (error) {
-    createLogger().error(error, error.message)
+    logger.error(error, error.message)
   }
 }
 
@@ -52,12 +54,17 @@ export const metricsTimer = async (metricName, fn) => {
   } finally {
     const end = process.hrtime.bigint()
     const durationMs = Number(end - start) / 1_000_000
-    metricsLogger.putMetric(
-      metricName,
-      durationMs,
-      Unit.Milliseconds,
-      StorageResolution.Standard
-    )
+    try {
+      metricsLogger.putMetric(
+        metricName,
+        durationMs,
+        Unit.Milliseconds,
+        StorageResolution.Standard
+      )
+      await metricsLogger.flush()
+    } catch (error) {
+      logger.error(error, error.message)
+    }
   }
 }
 

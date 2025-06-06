@@ -17,8 +17,9 @@ const metricsCounter = async (metricName, value = 1) => {
     return
   }
 
+  const metricsLogger = createMetricsLogger()
+
   try {
-    const metricsLogger = createMetricsLogger()
     metricsLogger.putMetric(
       metricName,
       value,
@@ -28,6 +29,35 @@ const metricsCounter = async (metricName, value = 1) => {
     await metricsLogger.flush()
   } catch (error) {
     createLogger().error(error, error.message)
+  }
+}
+
+/**
+ * @param {string} metricName
+ * @param {Function} fn
+ */
+export const metricsTimer = async (metricName, fn) => {
+  const isMetricsEnabled = config.get('isMetricsEnabled')
+
+  if (!isMetricsEnabled) {
+    return
+  }
+
+  const metricsLogger = createMetricsLogger()
+
+  const start = process.hrtime.bigint()
+
+  try {
+    return await fn()
+  } finally {
+    const end = process.hrtime.bigint()
+    const durationMs = Number(end - start) / 1_000_000
+    metricsLogger.putMetric(
+      metricName,
+      durationMs,
+      Unit.Milliseconds,
+      StorageResolution.Standard
+    )
   }
 }
 

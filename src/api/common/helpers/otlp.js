@@ -1,10 +1,14 @@
-// src/lib/metrics.js
 import {
   MeterProvider,
   PeriodicExportingMetricReader
 } from '@opentelemetry/sdk-metrics'
-import { Resource } from '@opentelemetry/resources'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions'
+import { resourceFromAttributes } from '@opentelemetry/resources'
+
+const resource = resourceFromAttributes({
+  [ATTR_SERVICE_NAME]: 'cdp-canary-deployment-backend'
+})
 
 const metricExporter = new OTLPMetricExporter({
   url:
@@ -13,19 +17,16 @@ const metricExporter = new OTLPMetricExporter({
 })
 
 const meterProvider = new MeterProvider({
-  resource: new Resource({
-    'service.name': 'cdp-canary-backend'
-  })
+  resource,
+  metricReaders: [
+    new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: 5000
+    })
+  ]
 })
 
-meterProvider.addMetricReader(
-  new PeriodicExportingMetricReader({
-    exporter: metricExporter,
-    exportIntervalMillis: 5000
-  })
-)
-
-const meter = meterProvider.getMeter('cdp-canary-backend')
+export const meter = meterProvider.getMeter('cdp-canary-deployment-backend')
 
 export const versionRequestCounter = meter.createCounter(
   'version_endpoint_total',

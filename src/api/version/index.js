@@ -1,4 +1,5 @@
 import { versionController } from '~/src/api/version/controllers/index.js'
+import { versionRequestCounter } from '~/src/api/common/helpers/otlp.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -11,7 +12,13 @@ const version = {
         {
           method: 'GET',
           path: '/version',
-          ...versionController
+          // Spread the existing controller config (validate, tags, etc)
+          ...versionController,
+          // Override handler so we can increment the metric first
+          handler: async (request, h) => {
+            versionRequestCounter.add(1)
+            return await versionController.handler(request, h)
+          }
         }
       ])
     }

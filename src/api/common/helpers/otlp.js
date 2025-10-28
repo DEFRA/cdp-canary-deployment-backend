@@ -3,6 +3,7 @@ import {
   MeterProvider,
   PeriodicExportingMetricReader
 } from '@opentelemetry/sdk-metrics'
+import { Resource } from '@opentelemetry/resources'
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http'
 
 const metricExporter = new OTLPMetricExporter({
@@ -11,7 +12,12 @@ const metricExporter = new OTLPMetricExporter({
     'http://localhost:4318/v1/metrics'
 })
 
-const meterProvider = new MeterProvider({})
+const meterProvider = new MeterProvider({
+  resource: new Resource({
+    'service.name': 'cdp-canary-backend'
+  })
+})
+
 meterProvider.addMetricReader(
   new PeriodicExportingMetricReader({
     exporter: metricExporter,

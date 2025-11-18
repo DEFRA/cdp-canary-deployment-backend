@@ -78,31 +78,55 @@ const config = convict({
         : ['req', 'res', 'responseTime']
     }
   },
-  mongoUri: {
-    doc: 'URI for mongodb',
-    format: String,
-    default: 'mongodb://127.0.0.1:27017/',
-    env: 'MONGO_URI'
-  },
-  mongoDatabase: {
-    doc: 'database for mongodb',
-    format: String,
-    default: 'cdp-canary-deployment-backend',
-    env: 'MONGO_DATABASE'
+  mongo: {
+    mongoUrl: {
+      doc: 'URL for mongodb',
+      format: String,
+      default: 'mongodb://127.0.0.1:27017',
+      env: 'MONGO_URI'
+    },
+    databaseName: {
+      doc: 'database for mongodb',
+      format: String,
+      default: 'cdp-canary-deployment-backend',
+      env: 'MONGO_DATABASE'
+    },
+    mongoOptions: {
+      retryWrites: {
+        doc: 'enable mongo write retries',
+        format: Boolean,
+        nullable: true,
+        default: null,
+        env: 'MONGO_RETRY_WRITES'
+      },
+      readPreference: {
+        doc: 'mongo read preference',
+        format: [
+          'primary',
+          'primaryPreferred',
+          'secondary',
+          'secondaryPreferred',
+          'nearest'
+        ],
+        nullable: true,
+        default: null,
+        env: 'MONGO_READ_PREFERENCE'
+      }
+    }
   },
   httpProxy: {
     doc: 'HTTP Proxy',
     format: String,
     nullable: true,
     default: null,
-    env: 'CDP_HTTP_PROXY'
+    env: 'HTTP_PROXY'
   },
   httpsProxy: {
     doc: 'HTTPS Proxy',
     format: String,
     nullable: true,
     default: null,
-    env: 'CDP_HTTPS_PROXY'
+    env: 'HTTP_PROXY'
   },
   isSecureContextEnabled: {
     doc: 'Enable Secure Context',
@@ -124,7 +148,7 @@ const config = convict({
       env: 'TRACING_HEADER'
     }
   },
-  scheduler: {
+  mongoCanary: {
     enabled: {
       doc: 'Enable the mongo scheduler',
       format: Boolean,
@@ -136,6 +160,27 @@ const config = convict({
       format: String,
       default: '*/1 * * * *',
       env: 'SCHEDULER_INTERVAL'
+    }
+  },
+  proxyCanary: {
+    enabled: {
+      doc: 'Enable the proxy scheduler',
+      format: Boolean,
+      default: true,
+      env: 'PROXY_CANARY_ENABLED'
+    },
+    interval: {
+      doc: 'When to run the scheduler (cron format)',
+      format: String,
+      default: '*/1 * * * *',
+      env: 'PROXY_CANARY_INTERVAL'
+    },
+    url: {
+      doc: 'Which url to use to test the canary',
+      format: String,
+      default:
+        'https://login.microsoftonline.com/770a2450-0227-4c62-90c7-4e38537f1102/v2.0/.well-known/openid-configuration',
+      env: 'PROXY_CANARY_URL'
     }
   }
 })

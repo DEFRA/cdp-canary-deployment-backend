@@ -1,56 +1,40 @@
 import { MongoClient } from 'mongodb'
 import { LockManager } from 'mongo-locks'
 
-import { config } from '~/src/config/index.js'
-
-/**
- * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
- */
 export const mongoDb = {
   plugin: {
-    name: 'mongodb',
+    name: 'mongoDb',
     version: '1.0.0',
-    /**
-     *
-     * @param { import('@hapi/hapi').Server } server
-     * @param {{mongoUrl: string, databaseName: string, retryWrites: boolean, readPreference: string}} options
-     * @returns {Promise<void>}
-     */
     register: async function (server, options) {
-      server.logger.info('Setting up MongoDb')
+      server.logger.info('Setting up mongodb')
 
       const client = await MongoClient.connect(options.mongoUrl, {
-        retryWrites: options.retryWrites,
-        readPreference: options.readPreference,
+        ...options.mongoOptions,
         ...(server.secureContext && { secureContext: server.secureContext })
       })
 
-      const databaseName = options.databaseName
+      const { databaseName } = options
       const db = client.db(databaseName)
       const locker = new LockManager(db.collection('mongo-locks'))
 
       await createIndexes(db)
 
-      server.logger.info(`MongoDb connected to ${databaseName}`)
+      server.logger.info(`mongodb connected to ${databaseName}`)
 
       server.decorate('server', 'mongoClient', client)
-      server.decorate('server', 'db', db)
-      server.decorate('server', 'locker', locker)
-      server.decorate('request', 'db', () => db, { apply: true })
-      server.decorate('request', 'locker', () => locker, { apply: true })
+      server.decorate('request', 'mongoClient', client)
 
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      server.decorate('server', 'db', db)
+      server.decorate('request', 'db', db)
+
+      server.decorate('server', 'locker', locker)
+      server.decorate('request', 'locker', locker)
+
       server.events.on('stop', async () => {
         server.logger.info('Closing Mongo client')
         await client.close(true)
       })
     }
-  },
-  options: {
-    mongoUrl: config.get('mongoUri'),
-    databaseName: config.get('mongoDatabase'),
-    retryWrites: false,
-    readPreference: 'secondary'
   }
 }
 

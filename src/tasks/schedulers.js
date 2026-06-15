@@ -1,7 +1,28 @@
 import cron from 'node-cron'
+import { checkLog } from '~/src/tasks/log-canary.js'
 import { checkMongo } from '~/src/tasks/mongo-canary.js'
 import { metricsTimer } from '~/src/api/common/helpers/metrics.js'
 import { checkProxy } from '~/src/tasks/proxy-canary.js'
+
+export const logScheduler = {
+  plugin: {
+    name: 'Log Scheduler',
+    version: '0.1.0',
+    register: (server, options) => {
+      if (!options.enabled) {
+        server.logger.info('Log scheduler is NOT enabled')
+        return
+      }
+
+      server.logger.info(
+        `Log scheduler is enabled, running every ${options.interval}`
+      )
+      cron.schedule(options.interval, async () => {
+        await checkLog(server)
+      })
+    }
+  }
+}
 
 export const mongoScheduler = {
   plugin: {

@@ -8,7 +8,11 @@ import { failAction } from '~/src/api/common/helpers/fail-action.js'
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
-import { mongoScheduler, proxyScheduler } from '~/src/tasks/schedulers.js'
+import {
+  logScheduler,
+  mongoScheduler,
+  proxyScheduler
+} from '~/src/tasks/schedulers.js'
 import { mongoDb } from '~/src/api/common/helpers/mongodb.js'
 import { setupProxy } from '~/src/api/common/helpers/setup-proxy.js'
 
@@ -57,6 +61,11 @@ async function createServer() {
     { plugin: mongoDb.plugin, options: config.get('mongo') },
     router
   ])
+
+  await server.register({
+    plugin: logScheduler.plugin,
+    options: config.get('logCanary')
+  })
 
   await server.register({
     plugin: mongoScheduler.plugin,

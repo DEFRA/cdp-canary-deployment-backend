@@ -148,6 +148,20 @@ const config = convict({
       env: 'TRACING_HEADER'
     }
   },
+  logCanary: {
+    enabled: {
+      doc: 'Enable the log scheduler',
+      format: Boolean,
+      default: true,
+      env: 'LOG_CANARY_ENABLED'
+    },
+    interval: {
+      doc: 'When to run the scheduler (cron format)',
+      format: String,
+      default: '*/1 * * * *',
+      env: 'LOG_CANARY_INTERVAL'
+    }
+  },
   mongoCanary: {
     enabled: {
       doc: 'Enable the mongo scheduler',
